@@ -1,0 +1,30 @@
+{
+  "name": "civicpulse",
+  "version": "2.0.0",
+  "description": "CivicPulse — Smart Civic Complaint Management System",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "dev": "concurrently --names \"SERVER,CLIENT\" --prefix-colors \"blue,green\" \"cd server && npm run dev\" \"cd client && npm start\"",
+    "build": "cd client && npm run build",
+    "test": "cd server && npm test",
+    "seed": "cd server && node seed.js",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "nodemon": "^3.1.14"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.17.0",
+    "cors": "^2.8.6",
+    "multer": "^2.2.0",
+    "nodemailer": "^8.0.11",
+    "ua-parser-js": "^2.0.10"
+  }
+}
