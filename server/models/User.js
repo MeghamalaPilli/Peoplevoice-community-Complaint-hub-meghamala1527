@@ -53,11 +53,16 @@ const userSchema = new mongoose.Schema({
     enum: { values: ['citizen', 'president', 'admin'], message: 'Role must be citizen, president, or admin' },
     default: 'citizen'
   },
-  phone: {
-    type: String,
-    trim: true,
-    maxlength: [15, 'Phone number too long']
-  },
+ phone: {
+  type: String,
+  required: true,
+  validate: {
+    validator: function(v) {
+      return /^[6-9]\d{9}$/.test(v);
+    },
+    message: "Phone number must be exactly 10 digits."
+  }
+},
    aadharNumber: {
     type: String,
     trim: true,

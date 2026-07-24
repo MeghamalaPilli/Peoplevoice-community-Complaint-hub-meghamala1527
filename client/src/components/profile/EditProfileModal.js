@@ -73,13 +73,17 @@ const saveProfile = async () => {
 
   <div className="form-group">
     <label>Phone</label>
-    <input
-      className="form-control"
-      value={form.phone}
-      onChange={(e) =>
-        setForm({ ...form, phone: e.target.value })
-      }
-    />
+   <input
+  className="form-control"
+  value={form.phone}
+  maxLength={10}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      phone: e.target.value.replace(/\D/g, "").slice(0, 10)
+    })
+  }
+/>
   </div>
 
   <div className="form-group">

@@ -66,6 +66,9 @@ if (name === "pincode") {
   if (form.password !== form.confirmPassword) {
     return toast.error('Passwords do not match');
   }
+  if (!/^[6-9]\d{9}$/.test(form.phone)) {
+    return toast.error("Please enter a valid 10-digit mobile number");
+  }
   if (
     form.role === "president" &&
     !/^\d{12}$/.test(form.aadharNumber)
@@ -157,7 +160,21 @@ if (result.role === "admin") {
             </div>
             <div className="form-group">
               <label className="form-label">Phone Number</label>
-              <input className="form-input" name="phone" placeholder="+91 98765 43210" value={form.phone} onChange={handleChange} />
+             <input
+  className="form-input"
+  type="tel"
+  name="phone"
+  placeholder="Enter 10-digit mobile number"
+  value={form.phone}
+  maxLength={10}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      phone: e.target.value.replace(/\D/g, "").slice(0, 10)
+    })
+  }
+  required
+/>
             </div>
             {form.role === 'citizen' && (
   <div className="form-group">
