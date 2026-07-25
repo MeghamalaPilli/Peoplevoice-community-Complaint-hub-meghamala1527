@@ -129,6 +129,7 @@ const [actionForm, setActionForm] = useState({
                   <th>Priority</th>
                   <th>Status</th>
                   <th>Date</th>
+                  <th>Feedback</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -147,6 +148,45 @@ const [actionForm, setActionForm] = useState({
                       <td>{c.location?.area || '—'}</td>
                       <td><span className={`badge badge-${c.priority}`}>{c.priority}</span></td>
                       <td><span className={`badge badge-${c.status}`}>{c.status.replace('_',' ')}</span></td>
+                      <td>{format(new Date(c.createdAt), "dd MMM yy")}</td>
+
+<td>
+  {c.feedback?.rating ? (
+    <button
+      className="btn btn-success btn-sm"
+      style={{
+        background: "#22c55e",
+        color: "#fff"
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        navigate(`/president-feedback/${c._id}`);
+      }}
+    >
+      ⭐ {c.feedback.rating}/5
+    </button>
+  ) : (
+    <span style={{ color: "#999" }}>
+      No Feedback
+    </span>
+  )}
+</td>
+
+<td onClick={e => e.stopPropagation()}>
+  <button
+    className="btn btn-secondary btn-sm"
+    onClick={() => {
+      setSelectedComplaint(c);
+      setActionForm({
+        status: c.status,
+        note: "",
+        response: ""
+      });
+    }}
+  >
+    <MdEdit /> Manage
+  </button>
+</td>
                       <td style={{ fontSize: 12 }}>{format(new Date(c.createdAt), 'dd MMM yy')}</td>
                       <td onClick={e => e.stopPropagation()}>
                         <button className="btn btn-secondary btn-sm" onClick={() => { setSelectedComplaint(c); setActionForm({

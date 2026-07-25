@@ -712,6 +712,8 @@ router.get("/privacy", protect, async (req, res) => {
   }
 });
 
+
+
 router.put("/privacy", protect, async (req, res) => {
   try {
 

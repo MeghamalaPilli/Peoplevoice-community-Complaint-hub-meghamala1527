@@ -21,7 +21,7 @@ import PresidentDashboard from './pages/PresidentDashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import ManageUsers from './pages/ManageUsers';
 import ManageCategories from './pages/ManageCategories';
-import PresidentFeedbackPage from './pages/PresidentFeedbackPage';
+import PresidentFeedbackPage from "./pages/PresidentFeedbackPage";
 import Profile from "./pages/Profile";
 
 const OnlineStatusBanner = () => {
@@ -132,12 +132,8 @@ const AppRoutes = () => {
   }
 />
 <Route
-  path="/president/feedback/:id"
-  element={
-    <ProtectedRoute roles={['president']}>
-      <PresidentFeedbackPage />
-    </ProtectedRoute>
-  }
+    path="/president-feedback/:id"
+    element={<PresidentFeedbackPage />}
 />
 <Route
     path="/profile"
