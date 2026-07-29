@@ -5,6 +5,7 @@ import Topbar from '../components/shared/Topbar';
 import API from '../utils/api';
 import toast from 'react-hot-toast';
 import { MdSearch, MdEdit, MdRefresh, MdBarChart, MdPeople } from 'react-icons/md';
+import ImpersonationBanner from "../components/shared/ImpersonationBanner";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -61,6 +62,7 @@ const [userForm, setUserForm] = useState({
       <Sidebar />
       <div className="main-content">
         <Topbar title="Admin Dashboard" />
+         <ImpersonationBanner />
         <div className="page-content">
           <div className="page-header">
             <div>

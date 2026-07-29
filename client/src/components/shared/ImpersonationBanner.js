@@ -46,38 +46,63 @@ const ImpersonationBanner = () => {
     if (localStorage.getItem("impersonating") !== "true")
         return null;
 
-    return (
+   return (
+  <div
+    style={{
+      marginBottom: "24px",
+      padding: "18px 22px",
+      borderRadius: "16px",
+      background: "rgba(255, 193, 7, 0.12)",
+      border: "1px solid rgba(255,193,7,.35)",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backdropFilter: "blur(12px)"
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px"
+      }}
+    >
+      <span style={{ fontSize: 24 }}>🛡️</span>
+
+      <div>
 
         <div
-            style={{
-                background: "#fff3cd",
-                borderBottom: "1px solid #ffe69c",
-                padding: "12px 20px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                fontWeight: 600
-            }}
+          style={{
+            fontWeight: 700,
+            color: "#FFD166",
+            fontSize: "16px"
+          }}
         >
-
-            <div>
-
-                🟨 You are currently impersonating a Village Admin
-
-            </div>
-
-            <button
-                className="btn btn-primary"
-                onClick={returnToSuperAdmin}
-            >
-
-                Return to Super Admin
-
-            </button>
-
+          Super Admin Impersonation Mode
         </div>
 
-    );
+        <div
+          style={{
+            color: "var(--text-secondary)",
+            fontSize: "14px"
+          }}
+        >
+          You are currently working as a Village Admin.
+        </div>
+
+      </div>
+
+    </div>
+
+    <button
+      className="btn btn-primary"
+      onClick={returnToSuperAdmin}
+    >
+      Return to Super Admin
+    </button>
+
+  </div>
+);
 
 };
 

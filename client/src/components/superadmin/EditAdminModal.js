@@ -7,6 +7,7 @@ const EditAdminModal = ({ admin, onClose, onSuccess }) => {
     const [form, setForm] = useState({
 
         name: admin.name,
+         email:admin.email,
         phone: admin.phone
 
     });
@@ -63,6 +64,22 @@ const EditAdminModal = ({ admin, onClose, onSuccess }) => {
                     />
 
                 </div>
+                <div className="form-group">
+
+<label>Email</label>
+
+<input
+    className="form-input"
+    value={form.email}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            email:e.target.value
+        })
+    }
+/>
+
+</div>
 
                 <div className="form-group">
 

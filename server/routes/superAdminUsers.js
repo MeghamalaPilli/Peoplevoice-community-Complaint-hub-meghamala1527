@@ -89,6 +89,23 @@ router.post(
                 lastActive: new Date()
 
             });
+            await UserSession.create({
+
+    user: admin._id,
+
+    token,
+
+    browser: "Impersonation",
+
+    os: "Super Admin",
+
+    device: "Super Admin",
+
+    ip: req.ip,
+
+    lastActive: new Date()
+
+});
 
             res.json({
 
@@ -108,6 +125,39 @@ router.post(
 
                 message: err.message
 
+            });
+
+        }
+
+    }
+);
+
+router.post(
+    "/stop-impersonation",
+    protect,
+    async (req, res) => {
+
+        try {
+
+            const token =
+                req.headers.authorization.split(" ")[1];
+
+            await UserSession.deleteOne({
+                token
+            });
+
+            res.json({
+                success: true,
+                message: "Returned to Super Admin"
+            });
+
+        }
+
+        catch (err) {
+
+            res.status(500).json({
+                success: false,
+                message: err.message
             });
 
         }

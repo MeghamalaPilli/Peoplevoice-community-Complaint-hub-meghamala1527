@@ -214,6 +214,30 @@ const AddAdminModal = ({ onClose, onSuccess }) => {
           disabled
         />
       </div>
+      <div
+    style={{
+        display: "flex",
+        justifyContent: "flex-end",
+        gap: 10,
+        marginTop: 20
+    }}
+>
+
+    <button
+        className="btn btn-secondary"
+        onClick={onClose}
+    >
+        Cancel
+    </button>
+
+    <button
+        className="btn btn-primary"
+        onClick={createAdmin}
+    >
+        Save
+    </button>
+
+</div>
 
     </div>
   </div>

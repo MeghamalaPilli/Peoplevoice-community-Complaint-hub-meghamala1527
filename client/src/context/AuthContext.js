@@ -62,24 +62,35 @@ const register = async (data) => {
 };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    localStorage.removeItem("originalToken");
+    localStorage.removeItem("impersonating");
+
+    delete API.defaults.headers.common.Authorization;
+
     setUser(null);
-  };
-  const impersonateLogin = async (token) => {
 
-  localStorage.setItem("token", token);
+};
+const impersonateLogin = async (token) => {
 
-  API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    localStorage.setItem("token", token);
 
-  const res = await API.get("/auth/me");
+    API.defaults.headers.common.Authorization =
+        `Bearer ${token}`;
 
-  localStorage.setItem(
-      "user",
-      JSON.stringify(res.data.user)
-  );
+    const res = await API.get("/auth/me");
 
-  setUser(res.data.user);
+    localStorage.setItem(
+        "user",
+        JSON.stringify(res.data.user)
+    );
+
+    setUser(res.data.user);
+
+    return res.data.user;
 
 };
 
