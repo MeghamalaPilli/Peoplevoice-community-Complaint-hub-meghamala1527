@@ -45,12 +45,6 @@ export const AuthProvider = ({ children }) => {
 
 const register = async (data) => {
   const res = await API.post('/auth/register', data);
-
-  // President registration doesn't return token/user
-  if (data.role === "president") {
-    return res.data;
-  }
-
   // Citizen registration
   if (res.data.user && res.data.token) {
     localStorage.setItem("token", res.data.token);

@@ -162,35 +162,133 @@ const logoutSingleDevice = async (id) => {
         Security Information
       </h3>
 
-      <div className="form-group">
-        <label>Current Password</label>
-        <input
-            type={showCurrent ? "text" : "password"}
-          className="form-control"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-        />
-      </div>
+     <div className="form-group">
+  <label
+    style={{
+      color: "var(--text-primary)",
+      fontSize: "14px",
+      fontWeight: 600,
+      width: "135px",
+      display: "inline-block",
+      marginRight: "10px"
+    }}
+  >
+    Current Password
+  </label>
 
-      <div className="form-group">
-        <label>New Password</label>
-        <input
-            type={showCurrent ? "text" : "password"}
-          className="form-control"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-      </div>
+  <div
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      position: "relative"
+    }}
+  >
+    <input
+      className="form-input"
+      type={showCurrent ? "text" : "password"}
+      value={currentPassword}
+      onChange={(e) => setCurrentPassword(e.target.value)}
+      style={{ width: "220px", paddingRight: "40px" }}
+    />
 
+    <span
+      onClick={() => setShowCurrent(!showCurrent)}
+      style={{
+        position: "absolute",
+        right: "12px",
+        cursor: "pointer",
+        color: "#888"
+      }}
+    >
+      {showCurrent ? <FaEyeSlash /> : <FaEye />}
+    </span>
+  </div>
+</div>
+
+    <div className="form-group">
+  <label
+    style={{
+      color: "var(--text-primary)",
+      fontSize: "14px",
+      fontWeight: 600,
+      width: "135px",
+      display: "inline-block",
+      marginRight: "10px"
+    }}
+  >
+    New Password
+  </label>
+
+  <div
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      position: "relative"
+    }}
+  >
+    <input
+      className="form-input"
+      type={showNew ? "text" : "password"}
+      value={newPassword}
+      onChange={(e) => setNewPassword(e.target.value)}
+      style={{ width: "220px", paddingRight: "40px" }}
+    />
+
+    <span
+      onClick={() => setShowNew(!showNew)}
+      style={{
+        position: "absolute",
+        right: "12px",
+        cursor: "pointer",
+        color: "#888"
+      }}
+    >
+      {showNew ? <FaEyeSlash /> : <FaEye />}
+    </span>
+  </div>
+</div>
       <div className="form-group">
-        <label>Confirm Password</label>
-        <input
-            type={showCurrent ? "text" : "password"}
-          className="form-control"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-      </div>
+  <label
+    style={{
+      color: "var(--text-primary)",
+      fontSize: "14px",
+      fontWeight: 600,
+      width: "135px",
+      display: "inline-block",
+      marginRight: "10px"
+    }}
+  >
+    New Password
+  </label>
+
+  <div
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      position: "relative"
+    }}
+  >
+    <input
+      className="form-input"
+      type={showNew ? "text" : "password"}
+      value={newPassword}
+      onChange={(e) => setNewPassword(e.target.value)}
+      style={{ width: "220px", paddingRight: "40px" }}
+    />
+
+    <span
+      onClick={() => setShowNew(!showNew)}
+      style={{
+        position: "absolute",
+        right: "12px",
+        cursor: "pointer",
+        color: "#888"
+      }}
+    >
+      {showNew ? <FaEyeSlash /> : <FaEye />}
+    </span>
+  </div>
+</div>
 
       {!otpSent ? (
         <button
@@ -206,7 +304,15 @@ const logoutSingleDevice = async (id) => {
             className="form-group"
             style={{ marginTop: 20 }}
           >
-            <label>Email OTP</label>
+            <label
+  style={{
+    color: "var(--text-primary)",
+    fontSize: "14px",
+    fontWeight: 600
+  }}
+>
+  Email OTP
+</label>
 
             <input
               type="text"

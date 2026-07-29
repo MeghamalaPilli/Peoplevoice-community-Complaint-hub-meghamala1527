@@ -231,53 +231,14 @@ const wordCount = form.description
             <div className="card" style={{ marginBottom: 20 }}>
               <h3 style={{ marginBottom: 20, fontSize: 16 }}>📍 Location</h3>
                 <div className="grid-2">
-    <div className="form-group">
-  <label className="form-label">Village Name</label>
-
-  <input
-    className="form-input"
-    value={form.villageName}
-    readOnly
-  />
-</div>
-
-    <div className="form-group">
-      <label className="form-label">Mandal *</label>
-      <input
-        className="form-input"
-        name="mandal"
-        value={form.mandal}
-        onChange={handleChange}
-        placeholder="Enter Mandal"
-        required
-      />
-    </div>
+  
+   
   </div>
 
   <div className="grid-2">
-    <div className="form-group">
-      <label className="form-label">District *</label>
-      <input
-        className="form-input"
-        name="district"
-        value={form.district}
-        onChange={handleChange}
-        placeholder="Enter District"
-        required
-      />
-    </div>
 
-    <div className="form-group">
-      <label className="form-label">State *</label>
-      <input
-        className="form-input"
-        name="state"
-        value={form.state}
-        onChange={handleChange}
-        placeholder="Enter State"
-        required
-      />
-    </div>
+
+   
   </div>
 
  <div className="form-group">
@@ -285,18 +246,16 @@ const wordCount = form.description
 
   <textarea
     className="form-textarea"
+    name="locationAddress"
     value={form.locationAddress}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        locationAddress: e.target.value,
+      })
+    }
     rows={3}
-    readOnly
-  />
-</div>
-<div className="form-group">
-  <label className="form-label">PIN Code</label>
-
-  <input
-    className="form-input"
-    value={form.pincode}
-    readOnly
+    placeholder="Enter address"
   />
 </div>
               <button type="button" className="btn btn-secondary btn-sm" onClick={handleGPS} disabled={gpsLoading}>

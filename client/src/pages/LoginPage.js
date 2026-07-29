@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import API from "../utils/api";
+
 
 const LoginPage = () => {
   const [tab, setTab] = useState('login');
   const [loading, setLoading] = useState(false);
+  const [villages, setVillages] = useState([]);
  const [form, setForm] = useState({
   name: '',
   email: '',
@@ -42,7 +45,27 @@ if (name === "pincode") {
     [name]: value,
   }));
 };
+useEffect(() => {
 
+    loadVillages();
+
+}, []);
+
+const loadVillages = async () => {
+
+    try {
+
+        const res = await API.get("/villages")
+
+        setVillages(res.data.villages);
+
+    } catch {
+
+        toast.error("Unable to load villages");
+
+    }
+
+};
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -167,12 +190,12 @@ if (result.role === "admin") {
   placeholder="Enter 10-digit mobile number"
   value={form.phone}
   maxLength={10}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      phone: e.target.value.replace(/\D/g, "").slice(0, 10)
-    })
-  }
+  onChange={(e)=>
+        setForm({
+            ...form,
+            phone:e.target.value.replace(/\D/g,"").slice(0,10)
+        })
+    }
   required
 />
             </div>
@@ -191,62 +214,78 @@ if (result.role === "admin") {
 </div>
 )}
 
-<div className="form-group">
-    <label className="form-label">Adhar Number</label>
-    <input
-        type="text"
-        maxLength={12}
-        value={form.aadharNumber}
-        onChange={(e) =>
-            setForm({
-                ...form,
-                aadharNumber: e.target.value
-            })
-        }
-        placeholder="Enter Aadhaar Number"
-    />
-</div>
 
 
 <div className="form-group">
-  <label className="form-label">Village Name</label>
+  <label className="form-label">
+    Village Name
+  </label>
 
   <select
     className="form-select"
     name="villageName"
     value={form.villageName}
-    onChange={handleChange}
+    onChange={(e) => {
+      const village = villages.find(
+        (v) => v.name === e.target.value
+      );
+
+      if (!village) {
+        setForm({
+          ...form,
+          villageName: "",
+          mandal: "",
+          pincode: ""
+        });
+        return;
+      }
+
+      setForm({
+        ...form,
+        villageName: village.name,
+        mandal: village.mandal,
+        pincode: village.pincode
+      });
+    }}
     required
   >
     <option value="">Select Village</option>
-    <option value="Kotikalapudi">Kotikalapudi</option>
+
+    {villages.map((village) => (
+      <option
+        key={village._id}
+        value={village.name}
+      >
+        {village.name}
+      </option>
+    ))}
   </select>
 </div>
 <div className="form-group">
-  <label className="form-label">Mandal</label>
 
-  <select
-    className="form-select"
-    name="mandal"
-    value={form.mandal}
-    onChange={handleChange}
-    required
-  >
-    <option value="">Select Mandal</option>
+    <label className="form-label">
+        Mandal
+    </label>
 
-    <option value="Ibrahimpatnam">Ibrahimpatnam</option>
+    <input
+        className="form-input"
+        value={form.mandal}
+        disabled
+    />
 
-  </select>
 </div>
             <div className="form-group">
               <label className="form-label">Account Type</label>
-              <select className="form-select" name="role" value={form.role} onChange={handleChange}>
-                <option value="citizen">Citizen</option>
-                <option value="president">President</option>
-      
-              </select>
+              <select
+  className="form-select"
+  name="role"
+  value={form.role}
+  onChange={handleChange}
+>
+  <option value="citizen">Citizen</option>
+</select>
             </div>
-           {form.role === "president" && (
+           {form.role === "citizen" && (
   <div className="form-group">
     <label className="form-label">Aadhaar Number</label>
 

@@ -137,12 +137,45 @@ router.post("/villages", protect, superAdminOnly, async (req, res) => {
 
 router.get("/villages", protect, superAdminOnly, async (req, res) => {
 
-    const villages = await Village.find().sort("name");
+    // 1. Find all Admins
+const admins = await User.find({ role: "admin" });
 
-    res.json({
-        success: true,
-        villages
+for (const admin of admins) {
+
+    console.log({
+        name: admin.name,
+        village: admin.villageName,
+        mandal: admin.mandal,
+        pincode: admin.pincode
     });
+
+    if (!admin.villageName) continue;
+
+    const exists = await Village.findOne({
+        name: admin.villageName
+    });
+
+    if (!exists) {
+
+        console.log("Creating village:", admin.villageName);
+
+        await Village.create({
+            name: admin.villageName,
+            mandal: admin.mandal || "",
+            district: admin.district || "Unknown",
+            pincode: admin.pincode,
+            isActive: true
+        });
+
+    }
+}
+// 3. Return villages
+const villages = await Village.find().sort("name");
+
+res.json({
+    success: true,
+    villages
+});
 
 });
 

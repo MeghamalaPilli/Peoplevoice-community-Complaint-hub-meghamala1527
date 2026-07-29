@@ -22,6 +22,29 @@ const superAdminOnly = (req, res, next) => {
 // CREATE VILLAGE
 //
 
+// Public route for registration
+
+router.get("/public", async (req, res) => {
+
+    try {
+
+        const villages = await Village.find().sort("name");
+
+        res.json({
+            success: true,
+            villages
+        });
+
+    } catch (err) {
+
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+
+});
 router.post(
     "/",
     protect,
@@ -53,20 +76,29 @@ router.post(
 // GET ALL VILLAGES
 //
 
-router.get(
-    "/",
-    protect,
-    async (req, res) => {
+router.get("/", async (req, res) => {
 
-        const villages = await Village.find().sort("villageName");
+    try {
+
+        const villages = await Village
+            .find()
+            .sort({ name: 1 });
 
         res.json({
             success: true,
             villages
         });
 
+    } catch (err) {
+
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
     }
-);
+
+});
 
 //
 // UPDATE VILLAGE
