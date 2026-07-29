@@ -179,6 +179,7 @@ const { impersonateLogin } = useAuth();
 
                                 <th>Name</th>
                                 <th>Email</th>
+                                <th>Phone</th>
                                 <th>Village</th>
                                 <th>Mandal</th>
                                 <th>Status</th>
@@ -199,6 +200,7 @@ const { impersonateLogin } = useAuth();
     <td>{admin.name}</td>
 
     <td>{admin.email}</td>
+    <td>{admin.phone}</td>
 
     <td>{admin.villageName}</td>
 
@@ -216,8 +218,15 @@ const { impersonateLogin } = useAuth();
         </span>
     </td>
 
-    <td>
-
+   <td>
+    <div
+        style={{
+            display: "flex",
+            gap: "8px",
+            flexWrap: "wrap",
+            alignItems: "center"
+        }}
+    >
         <button
             className="btn btn-secondary"
             onClick={() => setEditAdmin(admin)}
@@ -227,28 +236,26 @@ const { impersonateLogin } = useAuth();
 
         <button
             className="btn btn-warning"
-            style={{ marginLeft: 8 }}
             onClick={() => toggleStatus(admin._id)}
         >
             {admin.isActive ? "Disable" : "Enable"}
         </button>
 
-       <button
-    className="btn btn-danger"
-    style={{ marginLeft: 8 }}
-    onClick={() => deleteAdmin(admin._id)}
->
-    Delete
-</button>
+        <button
+            className="btn btn-danger"
+            onClick={() => deleteAdmin(admin._id)}
+        >
+            Delete
+        </button>
 
         <button
-    className="btn btn-primary"
-    onClick={() => impersonateAdmin(admin)}
->
-    Login
-</button>
-
-    </td>
+            className="btn btn-primary"
+            onClick={() => impersonateAdmin(admin)}
+        >
+            Login
+        </button>
+    </div>
+</td>
 
 </tr>
 

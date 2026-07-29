@@ -76,6 +76,50 @@ const AddAdminModal = ({ onClose, onSuccess }) => {
     <div className="modal-content">
 
       <h2>Add Village Admin</h2>
+   
+   <div className="form-group">
+    <label>Name</label>
+
+    <input
+        className="form-input"
+        value={form.name}
+        onChange={(e)=>
+            setForm({
+                ...form,
+                name:e.target.value
+            })
+        }
+    />
+</div>
+<div className="form-group">
+    <label>Email</label>
+
+    <input
+        type="email"
+        className="form-input"
+        value={form.email}
+        onChange={(e)=>
+            setForm({
+                ...form,
+                email:e.target.value
+            })
+        }
+    />
+</div>
+<div className="form-group">
+    <label>Phone</label>
+
+    <input
+        className="form-input"
+        value={form.phone}
+        onChange={(e)=>
+            setForm({
+                ...form,
+                phone:e.target.value
+            })
+        }
+    />
+</div>
 
       {/* Village */}
       <div className="form-group">
@@ -133,23 +177,6 @@ const AddAdminModal = ({ onClose, onSuccess }) => {
       setForm({
         ...form,
         email:e.target.value
-      })
-    }
-  />
-</div>
-<div className="form-group">
-  <label className="form-label">
-    Password
-  </label>
-
-  <input
-    type="password"
-    className="form-input"
-    value={form.password}
-    onChange={(e)=>
-      setForm({
-        ...form,
-        password:e.target.value
       })
     }
   />
@@ -222,6 +249,7 @@ const AddAdminModal = ({ onClose, onSuccess }) => {
         marginTop: 20
     }}
 >
+  
 
     <button
         className="btn btn-secondary"

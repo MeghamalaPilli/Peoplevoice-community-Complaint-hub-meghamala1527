@@ -7,8 +7,9 @@ const EditAdminModal = ({ admin, onClose, onSuccess }) => {
     const [form, setForm] = useState({
 
         name: admin.name,
-         email:admin.email,
+        email:admin.email,
         phone: admin.phone
+        
 
     });
 

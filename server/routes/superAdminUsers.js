@@ -8,6 +8,7 @@ const { protect } = require("../middleware/auth");
 const sendEmail = require("../utils/sendEmail");
 const UserSession = require("../models/UserSession");
 const UAParser = require("ua-parser-js");
+const crypto = require("crypto");
 
 
 const superAdminOnly = (req, res, next) => {
@@ -172,14 +173,16 @@ router.post(
 
         try {
 
-            const {
-                name,
-                email,
-                password,
-                phone,
-                villageId,
-                wardNumber
-            } = req.body;
+           const {
+    name,
+    email,
+    phone,
+    villageId,
+    wardNumber
+} = req.body;
+
+const password =
+    crypto.randomBytes(5).toString("hex");
 
             const exists = await User.findOne({ email });
 
@@ -216,30 +219,41 @@ router.post(
 
             });
 
-            await sendEmail(
+           await sendEmail(
 
-                email,
+    email,
 
-                "Village Admin Account",
+    "Welcome to CivicPulse - Village Admin Account",
 
-                `
+    `
 Hello ${name},
 
-Your Village Admin account has been created.
+Your Village Admin account has been created successfully.
 
-Village : ${village.name}
+-----------------------------------
 
-Email : ${email}
+Village
+${village.name}
 
-Password : ${password}
+Email
+${email}
 
-Please login to CivicPulse.
+Temporary Password
+${password}
+
+-----------------------------------
+
+Please login using the above credentials.
+
+For security reasons, please change your password immediately after your first login.
 
 Regards,
-CivicPulse
-                `
 
-            );
+CivicPulse Team
+
+`
+
+);
 
             res.status(201).json({
 
@@ -315,6 +329,7 @@ router.put(
             }
 
             admin.name = req.body.name;
+            admin.email =req.body.email;
             admin.phone = req.body.phone;
 
             await admin.save();
