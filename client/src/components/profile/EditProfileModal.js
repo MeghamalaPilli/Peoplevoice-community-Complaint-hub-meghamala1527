@@ -24,7 +24,8 @@ const EditProfileModal = ({ onClose, user, onUpdated }) => {
         mandal: user.mandal || "",
         wardNumber: user.wardNumber || "",
         pincode: user.pincode || "",
-        address: user.address || ""
+        address: user.address || "",
+        aadharNumber: user.aadharNumber || ""
       });
     }
   }, [user]);
@@ -85,6 +86,20 @@ const saveProfile = async () => {
   }
 />
   </div>
+
+ <input
+  type="text"
+  className="form-control"
+  value={form.aadharNumber}
+  maxLength={12}
+  placeholder="Enter Aadhar Number"
+  onChange={(e) =>
+    setForm({
+      ...form,
+      aadharNumber: e.target.value.replace(/\D/g, "").slice(0, 12)
+    })
+  }
+/>
 
   <div className="form-group">
     <label>Village</label>

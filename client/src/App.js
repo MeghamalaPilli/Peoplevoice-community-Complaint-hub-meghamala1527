@@ -23,6 +23,9 @@ import ManageUsers from './pages/ManageUsers';
 import ManageCategories from './pages/ManageCategories';
 import PresidentFeedbackPage from "./pages/PresidentFeedbackPage";
 import Profile from "./pages/Profile";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import ManageVillages from "./pages/ManageVillages";
+import SuperAdminUsers from "./pages/SuperAdminUsers";
 
 const OnlineStatusBanner = () => {
   const online = useOnlineStatus();
@@ -49,8 +52,11 @@ const ProtectedRoute = ({ children, roles }) => {
   if (!user) return <Navigate to="/login" replace />;
  if (roles && !roles.includes(user.role)) {
 
-  if (user.role === 'admin')
-  return <Navigate to="/admin" replace />;
+ if (user.role === "superadmin")
+    return <Navigate to="/superadmin" replace />;
+
+if (user.role === "admin")
+    return <Navigate to="/admin" replace />;
 
   if (user.role === 'president')
     return <Navigate to="/president" replace />;
@@ -72,11 +78,13 @@ const AppRoutes = () => {
   element={
     <ProtectedRoute>
       {
-        user?.role === 'admin'
-          ? <Navigate to="/admin" replace />
-          : user?.role === 'president'
-          ? <Navigate to="/president" replace />
-          : <Navigate to="/citizen" replace />
+      user?.role === "superadmin"
+  ? <Navigate to="/superadmin" replace />
+  : user?.role === "admin"
+  ? <Navigate to="/admin" replace />
+  : user?.role === "president"
+  ? <Navigate to="/president" replace />
+  : <Navigate to="/citizen" replace />
       }
     </ProtectedRoute>
   }
@@ -96,6 +104,31 @@ const AppRoutes = () => {
       <AdminDashboard />
     </ProtectedRoute>
   }
+/>
+
+<Route
+  path="/superadmin"
+  element={
+    <ProtectedRoute roles={["superadmin"]}>
+      <SuperAdminDashboard />
+    </ProtectedRoute>
+  }
+/>
+<Route
+    path="/superadmin/villages"
+    element={
+        <ProtectedRoute roles={["superadmin"]}>
+            <ManageVillages />
+        </ProtectedRoute>
+    }
+/>
+<Route
+    path="/superadmin/users"
+    element={
+        <ProtectedRoute roles={["superadmin"]}>
+            <SuperAdminUsers />
+        </ProtectedRoute>
+    }
 />
 
 <Route

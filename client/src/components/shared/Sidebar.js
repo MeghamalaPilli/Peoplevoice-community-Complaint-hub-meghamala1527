@@ -39,12 +39,28 @@ const presidentLinks = [
 
   { path: '/public', icon: <MdPublic />, label: 'Public Board' },
 ];
+const superAdminLinks = [
+  { path: "/superadmin", icon: <MdDashboard />, label: "Dashboard" },
+  { path: "/admin/analytics", icon: <MdBarChart />, label: "Analytics" },
+
+  { path: "/profile", icon: <MdPerson />, label: "My Profile" },
+];
 
 let links;
 
 if (user?.role === 'admin') {
   links = adminLinks;
 } else if (user?.role === 'president') {
+  links = presidentLinks;
+} else {
+  links = citizenLinks;
+}
+
+if (user?.role === "superadmin") {
+  links = superAdminLinks;
+} else if (user?.role === "admin") {
+  links = adminLinks;
+} else if (user?.role === "president") {
   links = presidentLinks;
 } else {
   links = citizenLinks;

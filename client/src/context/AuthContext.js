@@ -66,6 +66,22 @@ const register = async (data) => {
     localStorage.removeItem('user');
     setUser(null);
   };
+  const impersonateLogin = async (token) => {
+
+  localStorage.setItem("token", token);
+
+  API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+  const res = await API.get("/auth/me");
+
+  localStorage.setItem(
+      "user",
+      JSON.stringify(res.data.user)
+  );
+
+  setUser(res.data.user);
+
+};
 
   const updateUser = (updates) => {
     const updated = { ...user, ...updates };
@@ -74,7 +90,17 @@ const register = async (data) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+   <AuthContext.Provider
+value={{
+    user,
+    loading,
+    login,
+    register,
+    logout,
+    updateUser,
+    impersonateLogin
+}}
+>
       {children}
     </AuthContext.Provider>
   );

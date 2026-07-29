@@ -190,6 +190,24 @@ if (result.role === "admin") {
   />
 </div>
 )}
+
+<div className="form-group">
+    <label className="form-label">Adhar Number</label>
+    <input
+        type="text"
+        maxLength={12}
+        value={form.aadharNumber}
+        onChange={(e) =>
+            setForm({
+                ...form,
+                aadharNumber: e.target.value
+            })
+        }
+        placeholder="Enter Aadhaar Number"
+    />
+</div>
+
+
 <div className="form-group">
   <label className="form-label">Village Name</label>
 

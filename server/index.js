@@ -13,6 +13,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const morgan = require('morgan');
 const logger = require('./config/logger');
+const superAdminUsers = require("./routes/superAdminUsers");
 
 dotenv.config();
 
@@ -104,9 +105,13 @@ app.use(
 
 app.use('/api/complaints', require('./routes/complaints'));
 app.use('/api/admin', require('./routes/admin'));
+app.use("/api/superadmin", require("./routes/superAdmin"));
 app.use('/api/public', require('./routes/public'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use("/api/villages", require("./routes/village"));
+app.use("/api/superadmin", superAdminUsers);
+
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

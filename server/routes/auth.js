@@ -2,7 +2,6 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
-const PresidentRequest = require('../models/PresidentRequest');
 const { protect } = require('../middleware/auth');
 const logger = require('../config/logger');
 const sendEmail = require('../utils/sendEmail');
@@ -37,6 +36,7 @@ const sendTokenResponse = (
       wardNumber: user.wardNumber,
       pincode: user.pincode,
       address: user.address,
+      aadharNumber: user.aadharNumber,
       profilePicture: user.profilePicture,
       residenceHistory: user.residenceHistory,
       createdAt: user.createdAt,
@@ -70,36 +70,10 @@ address='',
 pincode = '',
 aadharNumber=''
 } = req.body;
-    const normalizedRole = ['citizen', 'president', 'admin'].includes(role) ? role : 'citizen';
+    const normalizedRole = ['citizen', 'president', 'admin', 'superadmin'].includes(role) ? role : 'citizen';
 
     if (await User.findOne({ email })) return res.status(400).json({ success: false, message: 'Email already registered' });
-if (await PresidentRequest.findOne({ email })) {
-  return res.status(400).json({
-    success: false,
-    message: "President request already submitted."
-  });
-}
-   // If President → create a request only
-if (normalizedRole === "president") {
 
-    await PresidentRequest.create({
-        name,
-        email,
-        password,
-        phone,
-        villageName,
-        mandal,
-        address,
-        pincode,
-        PresidentRequest,
-        aadharNumber
-    });
-
-    return res.status(201).json({
-        success: true,
-        message: "President request submitted. Wait for admin approval."
-    });
-}
 
 // Otherwise create a normal citizen account
 const user = await User.create({
@@ -112,7 +86,8 @@ const user = await User.create({
     villageName,
     mandal,
     address,
-    pincode
+    pincode,
+    aadharNumber
 });
 
 logger.info(`New user: ${email} [${user.role}]`);
@@ -183,7 +158,7 @@ await UserSession.create({
 router.get('/me', protect, async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
-    res.json({ success: true, user: { id: user._id, name: user.name,villageName: user.villageName, wardNumber: user.wardNumber, email: user.email, role: user.role, phone: user.phone, address: user.address,mandal: user.mandal, pincode: user.pincode, department: user.department, createdAt: user.createdAt, lastLogin: user.lastLogin, profilePicture: user.profilePicture, residenceHistory: user.residenceHistory, unreadNotifications: user.getUnreadCount(), notifications: user.notifications.slice(-20).reverse() } });
+    res.json({ success: true, user: { id: user._id, name: user.name,villageName: user.villageName, wardNumber: user.wardNumber, email: user.email, role: user.role, phone: user.phone, address: user.address,mandal: user.mandal, pincode: user.pincode, aadharNumber: user.aadharNumber, department: user.department, createdAt: user.createdAt, lastLogin: user.lastLogin, profilePicture: user.profilePicture, residenceHistory: user.residenceHistory, unreadNotifications: user.getUnreadCount(), notifications: user.notifications.slice(-20).reverse() } });
   } catch (err) { next(err); }
 });
 
@@ -201,6 +176,7 @@ router.put('/profile', protect, async (req, res) => {
     user.phone = req.body.phone;
     user.address = req.body.address;
     user.pincode = req.body.pincode;
+    user.aadharNumber = req.body.aadharNumber;
 
     // Residence Changed
 
@@ -222,6 +198,7 @@ router.put('/profile', protect, async (req, res) => {
       user.mandal = req.body.mandal;
       user.wardNumber = req.body.wardNumber;
       user.address = req.body.address;
+      user.aadharNumber = req.body.aadharNumber;
     }
 
     await user.save();

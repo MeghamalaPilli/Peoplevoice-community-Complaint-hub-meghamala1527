@@ -3,7 +3,6 @@ const { body, query, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const Complaint = require('../models/Complaint');
 const User = require('../models/User');
-const PresidentRequest = require('../models/PresidentRequest');
 const { protect, authorize } = require('../middleware/auth');
 const { sendNotification, notifyAdmins, emitComplaintUpdate } = require('../utils/notifications');
 const logger = require('../config/logger');
@@ -450,110 +449,4 @@ router.delete('/complaints/:id', authorize('admin'), async (req, res, next) => {
     next(err);
   }
 });
-
-router.get('/president-requests', authorize('admin'), async (req, res) => {
-
-    try {
-
-        const requests = await PresidentRequest.find();
-
-        console.log("President Requests:");
-        console.log(requests);
-
-        res.json({
-            success: true,
-            requests
-        });
-
-    } catch(err) {
-
-        console.log(err);
-
-        res.status(500).json({
-            success:false,
-            message:err.message
-        });
-
-    }
-
-});
-router.post('/president-requests/:id/approve', authorize('admin'), async (req, res) => {
-
-  try {
-
-    const request = await PresidentRequest.findById(req.params.id);
-
-    if (!request) {
-      return res.status(404).json({
-        success:false,
-        message:"Request not found"
-      });
-    }
-
-    const existing = await User.findOne({
-      email: request.email
-    });
-
-    if(existing){
-      return res.status(400).json({
-        success:false,
-        message:"User already exists"
-      });
-    }
-
-    const user = new User({
-
-      name:request.name,
-      email:request.email,
-      password:request.password,
-      phone:request.phone,
-      role:"president",
-      aadharNumber: request.aadharNumber,
-      villageName:request.villageName,
-      address:request.address
-
-    });
-
-    await user.save();
-
-    await PresidentRequest.findByIdAndDelete(req.params.id);
-
-    res.json({
-      success:true,
-      message:"President Approved"
-    });
-
-  } catch(err){
-
-    res.status(500).json({
-      success:false,
-      message:err.message
-    });
-
-  }
-
-});
-
-router.delete('/president-requests/:id', authorize('admin'), async (req,res)=>{
-
-    try{
-
-        await PresidentRequest.findByIdAndDelete(req.params.id);
-
-        res.json({
-            success:true,
-            message:"Request Rejected"
-        });
-
-    }catch(err){
-
-        res.status(500).json({
-            success:false,
-            message:err.message
-        });
-
-    }
-
-});
-
 module.exports = router;

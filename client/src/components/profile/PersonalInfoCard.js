@@ -6,7 +6,8 @@ import {
   MdLocationCity,
   MdHome,
   MdPinDrop,
-  MdEdit
+  MdEdit,
+  MdBadge
 } from "react-icons/md";
 
 const PersonalInfoCard = ({ onEdit }) => {
@@ -68,6 +69,11 @@ const PersonalInfoCard = ({ onEdit }) => {
           label="Ward"
           value={user?.wardNumber || "Not Added"}
         />
+     <InfoItem
+  icon={<MdBadge />}
+  label="Aadhaar Number"
+  value={user?.aadharNumber || "Not Added"}
+/>
 
         <InfoItem
           icon={<MdPinDrop />}

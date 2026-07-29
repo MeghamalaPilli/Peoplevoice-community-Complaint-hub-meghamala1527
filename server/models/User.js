@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema({
 },
   role: {
     type: String,
-    enum: { values: ['citizen', 'president', 'admin'], message: 'Role must be citizen, president, or admin' },
+    enum: { values: ['citizen', 'president', 'admin', 'superadmin'], message: 'Role must be citizen, president, or admin' },
     default: 'citizen'
   },
  phone: {

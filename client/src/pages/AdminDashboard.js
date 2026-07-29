@@ -4,29 +4,24 @@ import Sidebar from '../components/shared/Sidebar';
 import Topbar from '../components/shared/Topbar';
 import API from '../utils/api';
 import toast from 'react-hot-toast';
-import { format } from 'date-fns';
 import { MdSearch, MdEdit, MdRefresh, MdBarChart, MdPeople } from 'react-icons/md';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [complaints, setComplaints] = useState([]);
   const [stats, setStats] = useState({});
-  const [officers, setOfficers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [presidentRequests, setPresidentRequests] = useState([]);
+  
   
 
   const fetchAll = async () => {
     setLoading(true);
     try {
-     const [sRes, uRes, pRes]= await Promise.all([
+     const [sRes, uRes]= await Promise.all([
 API.get('/admin/stats'),
 API.get('/admin/users'),
-API.get('/admin/president-requests')
 ]);
-console.log("President API:", pRes.data);
       setStats(sRes.data.stats || {});
-        setPresidentRequests(pRes.data.requests || []);
     } catch (err) {
   console.error(err);
   console.log(err.response?.data);
@@ -51,40 +46,6 @@ const [userForm, setUserForm] = useState({
   department: ''
 });
 
-
-const approvePresident = async(id)=>{
-
-    try{
-
-        await API.post(`/admin/president-requests/${id}/approve`);
-
-        toast.success("President Approved");
-
-        fetchAll();
-
-    }catch(err)
-    {
-        toast.error(err.response?.data?.message);
-
-    }
-}
-const rejectPresident = async(id)=>{
-
-    try{
-
-        await API.delete(`/admin/president-requests/${id}`);
-
-        toast.success("Request Rejected");
-
-        fetchAll();
-
-    }catch(err){
-
-        toast.error(err.response?.data?.message);
-
-    }
-
-}
   const statCards = [
     { label: 'Total', value: stats.total, color: 'var(--accent-primary)', bg: 'rgba(108,99,255,0.12)' },
     { label: 'Pending', value: stats.pending, color: 'var(--accent-yellow)', bg: 'rgba(255,209,102,0.12)' },
@@ -139,53 +100,6 @@ const rejectPresident = async(id)=>{
               </div>
             ))}
           </div>
-<h2>Pending President Requests</h2>
-
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Email</th>
-<th>Phone</th>
-<th>Village</th>
-<th>Adhar</th>
-<th>Action</th>
-</tr>
-</thead>
-
-<tbody>
-
-{presidentRequests.map(r=>(
-<tr key={r._id}>
-
-<td>{r.name}</td>
-<td>{r.email}</td>
-<td>{r.phone}</td>
-<td>{r.villageName}</td>
-<td>{r.aadharNumber}</td>
-
-<td>
-
-<button
-onClick={()=>approvePresident(r._id)}
->
-Approve
-</button>
-
-<button
-onClick={()=>rejectPresident(r._id)}
->
-Reject
-</button>
-
-</td>
-
-</tr>
-))}
-
-</tbody>
-
-</table>
         </div>
       </div>
       {/* Manage Modal */}
