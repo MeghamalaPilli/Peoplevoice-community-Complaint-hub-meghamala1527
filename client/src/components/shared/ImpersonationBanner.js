@@ -87,7 +87,7 @@ const ImpersonationBanner = () => {
             fontSize: "14px"
           }}
         >
-          You are currently working as a Village Admin.
+          You are currently working as a President.
         </div>
 
       </div>

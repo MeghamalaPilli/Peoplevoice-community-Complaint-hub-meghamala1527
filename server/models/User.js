@@ -37,6 +37,11 @@ const userSchema = new mongoose.Schema({
     trim: true,
     default: null
   },
+  villageId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Village',
+  default: null
+},
   villageName: {
     type: String,
     trim: true,

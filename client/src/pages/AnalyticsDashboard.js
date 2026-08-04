@@ -27,20 +27,36 @@ const CustomTooltip = ({ active, payload, label }) => {
 const AnalyticsDashboard = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const isSuperAdmin = user?.role === 'superadmin';
+  const isPresident = user?.role === 'president';
   const [monthly, setMonthly] = useState([]);
   const [category, setCategory] = useState([]);
   const [resolution, setResolution] = useState([]);
   const [priority, setPriority] = useState([]);
+  const [overview, setOverview] = useState({});
+  const [workPerformance, setWorkPerformance] = useState({ presidents: [], admins: [], villages: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    Promise.all([
-      API.get('/analytics/monthly'),
-      API.get('/analytics/category'),
-      API.get('/analytics/resolution-time'),
-      API.get('/analytics/priority'),
-    ]).then(([m, c, r, p]) => {
+    const requests = isSuperAdmin
+      ? [API.get('/analytics/overview'), API.get('/analytics/work-performance')]
+      : [
+          API.get('/analytics/monthly'),
+          API.get('/analytics/category'),
+          API.get('/analytics/resolution-time'),
+          API.get('/analytics/priority')
+        ];
+
+    Promise.all(requests).then((responses) => {
+      if (isSuperAdmin) {
+        const [overviewRes, workRes] = responses;
+        setOverview(overviewRes?.data?.data || {});
+        setWorkPerformance(workRes?.data?.data || { presidents: [], admins: [], villages: [] });
+        return;
+      }
+
+      const [m, c, r, p] = responses;
       const monthlyData = Array.isArray(m?.data?.data) ? m.data.data : [];
       const categoryData = Array.isArray(c?.data?.data) ? c.data.data : [];
       const resolutionData = Array.isArray(r?.data?.data) ? r.data.data : [];
@@ -57,8 +73,10 @@ const AnalyticsDashboard = () => {
       setCategory([]);
       setResolution([]);
       setPriority([]);
+      setOverview({});
+      setWorkPerformance({ presidents: [], admins: [], villages: [] });
     }).finally(() => setLoading(false));
-  }, []);
+  }, [isSuperAdmin]);
 
   const totalComplaints = monthly.reduce((sum, item) => sum + (item.total || 0), 0);
   const resolvedComplaints = monthly.reduce((sum, item) => sum + (item.resolved || 0), 0);
@@ -86,7 +104,11 @@ const AnalyticsDashboard = () => {
           <div className="page-header">
             <div>
               <h1 className="page-title">Analytics</h1>
-              <p className="page-subtitle">{isAdmin ? 'Full system overview for the administrator' : 'Limited view tailored for the president'}</p>
+              <p className="page-subtitle">
+                {isSuperAdmin && 'Superadmin view: village, president and admin performance metrics'}
+                {isAdmin && !isSuperAdmin && 'Village admin view: complaints scoped to your village'}
+                {isPresident && 'President view: complaints and feedback for your assigned village'}
+              </p>
             </div>
           </div>
 
@@ -97,140 +119,143 @@ const AnalyticsDashboard = () => {
             </div>
           ) : null}
 
-          {isAdmin ? (
+          {isSuperAdmin ? (
             <>
               <div className="card" style={{ marginBottom: 24 }}>
-                <h3 style={{ marginBottom: 20, fontSize: 18 }}>📈 Monthly Complaints (Last 12 Months)</h3>
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={monthly} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2a2a4a" />
-                    <XAxis dataKey="month" stroke="#5a5a8a" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#5a5a8a" tick={{ fontSize: 12 }} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Line type="monotone" dataKey="total" stroke="#6c63ff" strokeWidth={2} dot={{ fill: '#6c63ff', r: 4 }} name="Total" />
-                    <Line type="monotone" dataKey="resolved" stroke="#00d9a6" strokeWidth={2} dot={{ fill: '#00d9a6', r: 4 }} name="Resolved" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="grid-2" style={{ marginBottom: 24 }}>
-                <div className="card">
-                  <h3 style={{ marginBottom: 20, fontSize: 18 }}>📂 By Category</h3>
-                  {category.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No data yet</div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height={280}>
-                      <BarChart data={category} margin={{ top: 5, right: 5, left: -20, bottom: 40 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#2a2a4a" />
-                        <XAxis dataKey="name" stroke="#5a5a8a" tick={{ fontSize: 10 }} angle={-35} textAnchor="end" />
-                        <YAxis stroke="#5a5a8a" tick={{ fontSize: 11 }} />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="total" fill="#6c63ff" radius={[4,4,0,0]} name="Total" />
-                        <Bar dataKey="resolved" fill="#00d9a6" radius={[4,4,0,0]} name="Resolved" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-
-                <div className="card">
-                  <h3 style={{ marginBottom: 20, fontSize: 18 }}>🎯 Priority Distribution</h3>
-                  {priority.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No data yet</div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height={280}>
-                      <PieChart>
-                        <Pie data={priority} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent*100).toFixed(0)}%`}>
-                          {priority.map((_, i) => (
-                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip content={<CustomTooltip />} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  )}
+                <h3 style={{ marginBottom: 20, fontSize: 18 }}>🧭 Superadmin Overview</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 16 }}>
+                  <div className="card" style={{ background: 'rgba(108,99,255,0.12)', border: '1px solid rgba(108,99,255,0.2)' }}>
+                    <div style={{ fontSize: 28, fontWeight: 700 }}>{overview.totalVillages ?? 0}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Villages</div>
+                  </div>
+                  <div className="card" style={{ background: 'rgba(0,217,166,0.12)', border: '1px solid rgba(0,217,166,0.2)' }}>
+                    <div style={{ fontSize: 28, fontWeight: 700 }}>{overview.totalPresidents ?? 0}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Presidents</div>
+                  </div>
+                  <div className="card" style={{ background: 'rgba(255,209,102,0.12)', border: '1px solid rgba(255,209,102,0.2)' }}>
+                    <div style={{ fontSize: 28, fontWeight: 700 }}>{overview.totalAdmins ?? 0}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Village Admins</div>
+                  </div>
+                  <div className="card" style={{ background: 'rgba(255,101,132,0.12)', border: '1px solid rgba(255,101,132,0.2)' }}>
+                    <div style={{ fontSize: 28, fontWeight: 700 }}>{overview.totalComplaints ?? 0}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Total Complaints</div>
+                  </div>
                 </div>
               </div>
 
-              <div className="card">
-                <h3 style={{ marginBottom: 20, fontSize: 18 }}>⏱️ Avg Resolution Time by Category (days)</h3>
-                {resolution.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No resolved complaints yet</div>
+              <div className="card" style={{ marginBottom: 24 }}>
+                <h3 style={{ marginBottom: 20, fontSize: 18 }}>👥 President Work Performance</h3>
+                {workPerformance.presidents.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No president feedback data available yet</div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={resolution} layout="vertical" margin={{ top: 5, right: 30, left: 60, bottom: 5 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}>
+                    {workPerformance.presidents.slice(0, 6).map((p, i) => (
+                      <div key={i} className="card" style={{ padding: 18 }}>
+                        <div style={{ fontSize: 16, fontWeight: 700 }}>{p.name}</div>
+                        <div style={{ margin: '10px 0 12px', color: 'var(--text-muted)', fontSize: 13 }}>Avg rating: {p.avgRating ?? '—'} / 5</div>
+                        <div style={{ display: 'grid', gap: 6, fontSize: 13 }}>
+                          <div>Total assigned: {p.totalAssigned}</div>
+                          <div>Resolved: {p.resolved}</div>
+                          <div>Feedback count: {p.feedbackCount}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="card" style={{ marginBottom: 24 }}>
+                <h3 style={{ marginBottom: 20, fontSize: 18 }}>🏛️ Village Work Performance</h3>
+                {workPerformance.villages.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No village feedback data available yet</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={workPerformance.villages} margin={{ top: 5, right: 20, left: 0, bottom: 40 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#2a2a4a" />
-                      <XAxis type="number" stroke="#5a5a8a" tick={{ fontSize: 11 }} />
-                      <YAxis type="category" dataKey="name" stroke="#5a5a8a" tick={{ fontSize: 11 }} />
+                      <XAxis dataKey="village" stroke="#5a5a8a" tick={{ fontSize: 10 }} angle={-35} textAnchor="end" />
+                      <YAxis stroke="#5a5a8a" tick={{ fontSize: 11 }} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="days" fill="#ffd166" radius={[0,4,4,0]} name="Avg Days" />
+                      <Bar dataKey="complaints" fill="#6c63ff" radius={[4,4,0,0]} name="Complaints" />
+                      <Bar dataKey="resolved" fill="#00d9a6" radius={[4,4,0,0]} name="Resolved" />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
               </div>
             </>
           ) : (
-            <>
-              <div className="grid-2" style={{ marginBottom: 24 }}>
-                <div className="card">
-                  <h3 style={{ marginBottom: 10, fontSize: 18 }}>📌 Overall Summary</h3>
-                  <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>A concise view for the president to monitor local complaint activity.</p>
-                  <div className="grid-2">
-                    <div className="card" style={{ background: 'rgba(108,99,255,0.12)', border: '1px solid rgba(108,99,255,0.2)' }}>
-                      <div style={{ fontSize: 28, fontWeight: 700 }}>{totalComplaints}</div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Total complaints</div>
-                    </div>
-                    <div className="card" style={{ background: 'rgba(0,217,166,0.12)', border: '1px solid rgba(0,217,166,0.2)' }}>
-                      <div style={{ fontSize: 28, fontWeight: 700 }}>{resolvedComplaints}</div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Resolved</div>
-                    </div>
-                    <div className="card" style={{ background: 'rgba(255,209,102,0.12)', border: '1px solid rgba(255,209,102,0.2)' }}>
-                      <div style={{ fontSize: 28, fontWeight: 700 }}>{pendingComplaints}</div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Pending</div>
-                    </div>
-                    <div className="card" style={{ background: 'rgba(255,101,132,0.12)', border: '1px solid rgba(255,101,132,0.2)' }}>
-                      <div style={{ fontSize: 28, fontWeight: 700 }}>{criticalComplaints}</div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Critical</div>
-                    </div>
+            isAdmin || isPresident ? (
+              <>
+                <div className="card" style={{ marginBottom: 24 }}>
+                  <h3 style={{ marginBottom: 20, fontSize: 18 }}>📈 Monthly Complaints (Last 12 Months)</h3>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <LineChart data={monthly} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2a2a4a" />
+                      <XAxis dataKey="month" stroke="#5a5a8a" tick={{ fontSize: 12 }} />
+                      <YAxis stroke="#5a5a8a" tick={{ fontSize: 12 }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Line type="monotone" dataKey="total" stroke="#6c63ff" strokeWidth={2} dot={{ fill: '#6c63ff', r: 4 }} name="Total" />
+                      <Line type="monotone" dataKey="resolved" stroke="#00d9a6" strokeWidth={2} dot={{ fill: '#00d9a6', r: 4 }} name="Resolved" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="grid-2" style={{ marginBottom: 24 }}>
+                  <div className="card">
+                    <h3 style={{ marginBottom: 20, fontSize: 18 }}>📂 By Category</h3>
+                    {category.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No data yet</div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={280}>
+                        <BarChart data={category} margin={{ top: 5, right: 5, left: -20, bottom: 40 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#2a2a4a" />
+                          <XAxis dataKey="name" stroke="#5a5a8a" tick={{ fontSize: 10 }} angle={-35} textAnchor="end" />
+                          <YAxis stroke="#5a5a8a" tick={{ fontSize: 11 }} />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Bar dataKey="total" fill="#6c63ff" radius={[4,4,0,0]} name="Total" />
+                          <Bar dataKey="resolved" fill="#00d9a6" radius={[4,4,0,0]} name="Resolved" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+
+                  <div className="card">
+                    <h3 style={{ marginBottom: 20, fontSize: 18 }}>🎯 Priority Distribution</h3>
+                    {priority.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No data yet</div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={280}>
+                        <PieChart>
+                          <Pie data={priority} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent*100).toFixed(0)}%`}>
+                            {priority.map((_, i) => (
+                              <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<CustomTooltip />} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                 </div>
 
                 <div className="card">
-                  <h3 style={{ marginBottom: 20, fontSize: 18 }}>📂 Complaint Categories</h3>
-                  {category.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No data yet</div>
+                  <h3 style={{ marginBottom: 20, fontSize: 18 }}>⏱️ Avg Resolution Time by Category (days)</h3>
+                  {resolution.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No resolved complaints yet</div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={280}>
-                      <BarChart data={category} margin={{ top: 5, right: 5, left: -20, bottom: 40 }}>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <BarChart data={resolution} layout="vertical" margin={{ top: 5, right: 30, left: 60, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#2a2a4a" />
-                        <XAxis dataKey="name" stroke="#5a5a8a" tick={{ fontSize: 10 }} angle={-35} textAnchor="end" />
-                        <YAxis stroke="#5a5a8a" tick={{ fontSize: 11 }} />
+                        <XAxis type="number" stroke="#5a5a8a" tick={{ fontSize: 11 }} />
+                        <YAxis type="category" dataKey="name" stroke="#5a5a8a" tick={{ fontSize: 11 }} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="total" fill="#6c63ff" radius={[4,4,0,0]} name="Total" />
+                        <Bar dataKey="days" fill="#ffd166" radius={[0,4,4,0]} name="Avg Days" />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
                 </div>
-              </div>
-
-              <div className="card">
-                <h3 style={{ marginBottom: 20, fontSize: 18 }}>🎯 Priority Snapshot</h3>
-                {priority.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No data yet</div>
-                ) : (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <PieChart>
-                      <Pie data={priority} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent*100).toFixed(0)}%`}>
-                        {priority.map((_, i) => (
-                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </>
+              </>
+            ) : null
           )}
         </div>
       </div>
@@ -239,3 +264,5 @@ const AnalyticsDashboard = () => {
 };
 
 export default AnalyticsDashboard;
+
+

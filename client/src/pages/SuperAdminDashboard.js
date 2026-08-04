@@ -19,6 +19,7 @@ const SuperAdminDashboard = () => {
     <div
         className="card"
         onClick={() => window.location="/superadmin/villages"}
+        style={{ cursor: "pointer" }}
     >
         <h3>🏘 Manage Villages</h3>
     </div>
@@ -31,11 +32,18 @@ const SuperAdminDashboard = () => {
     <h3>👨 Village Admins</h3>
 </div>
 
-    <div className="card">
-        <h3>👑 Presidents</h3>
-    </div>
-
-    <div className="card">
+    <div
+    className="card"
+    onClick={() => window.location="/superadmin/presidents"}
+    style={{ cursor: "pointer" }}
+>
+    <h3>👑 Presidents</h3>
+</div>
+    <div
+      className="card"
+      onClick={() => window.location="/superadmin/analytics"}
+      style={{ cursor: "pointer" }}
+    >
         <h3>📊 Analytics</h3>
     </div>
 

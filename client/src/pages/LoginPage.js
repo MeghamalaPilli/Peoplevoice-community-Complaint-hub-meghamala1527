@@ -260,7 +260,7 @@ if (result.role === "admin") {
       </option>
     ))}
   </select>
-</div>
+</div>  
 <div className="form-group">
 
     <label className="form-label">

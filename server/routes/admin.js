@@ -125,10 +125,12 @@ router.delete('/users/:id', authorize('admin'), async (req, res, next) => {
     const user = await User.findById(req.params.id);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
-    // soft delete (recommended)
     user.isActive = false;
     user.email = user.email + '_deleted_' + Date.now();
 
@@ -137,33 +139,12 @@ router.delete('/users/:id', authorize('admin'), async (req, res, next) => {
     res.json({
       success: true,
       message: 'User deactivated successfully'
-  });
-    const allowedSorts = ['-priorityScore', '-createdAt', 'createdAt', 'status', '-upvotes'];
-    const sortField = allowedSorts.includes(sort) ? sort : '-priorityScore';
-    const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
-
-    const [total, complaints] = await Promise.all([
-      Complaint.countDocuments(query),
-      Complaint.find(query)
-        .sort(sortField)
-        .skip((pageNum - 1) * limitNum)
-        .limit(limitNum)
-        .populate('submittedBy', 'name email phone')
-        .populate('assignedTo', 'name email department')
-        .lean()
-    ]);
-
-    res.json({
-      success: true,
-      complaints,
-      pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) }
     });
+
   } catch (err) {
     next(err);
   }
 });
-
 
 // ─── PUT /api/admin/complaints/:id/status ── Update status ───────────────────
 router.put('/complaints/:id/status', [
@@ -257,6 +238,15 @@ if (!president || !['admin', 'president'].includes(president.role)) {
   });
 }
     }
+    if (
+    req.user.role === "president" &&
+    president.villageName !== req.user.villageName
+) {
+    return res.status(403).json({
+        success: false,
+        message: "Cannot assign outside your village"
+    });
+}
 
     const complaint = await Complaint.findByIdAndUpdate(
       req.params.id,

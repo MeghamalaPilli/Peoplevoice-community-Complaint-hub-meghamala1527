@@ -353,46 +353,48 @@ router.put(
 );
 
 router.patch(
-    "/admins/:id/status",
+    "/users/:id/status",
     protect,
     superAdminOnly,
     async (req, res) => {
 
         try {
 
-            const admin = await User.findById(req.params.id);
+            const user = await User.findById(req.params.id);
 
-            if (!admin) {
-
+            if (!user) {
                 return res.status(404).json({
                     success: false,
-                    message: "Admin not found"
+                    message: "User not found"
                 });
-
             }
 
-            admin.isActive = !admin.isActive;
+            if (!["admin", "president"].includes(user.role)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Only Admins and Presidents can be updated"
+                });
+            }
 
-            await admin.save();
+            user.isActive = !user.isActive;
+
+            await user.save();
 
             res.json({
 
                 success: true,
-                message: admin.isActive
-                    ? "Admin Enabled"
-                    : "Admin Disabled",
 
-                admin
+                message: `${user.role} ${user.isActive ? "Enabled" : "Disabled"} successfully`,
+
+                user
 
             });
 
-        }
-
-        catch(err){
+        } catch (err) {
 
             res.status(500).json({
-                success:false,
-                message:err.message
+                success: false,
+                message: err.message
             });
 
         }
@@ -423,6 +425,441 @@ router.delete(
             res.json({
                 success: true,
                 message: "Village Admin deleted successfully"
+            });
+
+        } catch (err) {
+
+            res.status(500).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+    }
+);
+// ==========================================
+// PRESIDENT MANAGEMENT
+// ==========================================
+router.get(
+    "/presidents",
+    protect,
+    superAdminOnly,
+    async (req, res) => {
+
+        try {
+
+            const {
+                page = 1,
+                limit = 10,
+                search = ""
+            } = req.query;
+
+            const query = {
+                role: "president"
+            };
+
+            if (search) {
+
+                query.$or = [
+                    { name: { $regex: search, $options: "i" } },
+                    { email: { $regex: search, $options: "i" } },
+                    { villageName: { $regex: search, $options: "i" } }
+                ];
+
+            }
+
+            const total = await User.countDocuments(query);
+
+            const presidents = await User.find(query)
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(Number(limit));
+
+            res.json({
+
+                success: true,
+
+                presidents,
+
+                pagination: {
+
+                    total,
+
+                    page: Number(page),
+
+                    pages: Math.ceil(total / limit),
+
+                    limit: Number(limit)
+
+                }
+
+            });
+
+        }
+
+        catch (err) {
+
+            res.status(500).json({
+
+                success: false,
+
+                message: err.message
+
+            });
+
+        }
+
+    }
+);
+router.post(
+  "/presidents",
+  protect,
+  superAdminOnly,
+  async (req, res) => {
+    try {
+
+      const {
+        name,
+        email,
+        phone,
+        villageId
+      } = req.body;
+
+      // Check if email already exists
+      const exists = await User.findOne({ email });
+
+      if (exists) {
+        return res.status(400).json({
+          success: false,
+          message: "Email already exists"
+        });
+      }
+
+      // Find village
+      const village = await Village.findById(villageId);
+
+      if (!village) {
+        return res.status(404).json({
+          success: false,
+          message: "Village not found"
+        });
+      }
+
+      // Generate temporary password
+      const password = crypto.randomBytes(6).toString("hex");
+
+      const president = await User.create({
+
+        name,
+        email,
+        password,
+        phone,
+
+        role: "president",
+
+        villageId: village._id,
+
+        villageName: village.name,
+
+        mandal: village.mandal,
+
+        pincode: village.pincode,
+
+        isActive: true
+
+      });
+
+      // Send Login Credentials but do not fail creation if email delivery fails
+      let emailMessage = "President created successfully.";
+      try {
+        await sendEmail(
+          email,
+          "Welcome to CivicPulse - President Account",
+          `Hello ${name},
+
+Your President account has been created successfully.
+
+Village:
+${village.name}
+
+Email:
+${email}
+
+Temporary Password:
+${password}
+
+Please login and change your password immediately.
+
+Regards,
+
+CivicPulse Team`
+        );
+        emailMessage = "President created successfully. Email sent.";
+      } catch (err) {
+        console.error("President email failed:", err?.message || err);
+        emailMessage = "President created successfully. Email delivery failed.";
+      }
+
+      res.status(201).json({
+        success: true,
+        message: emailMessage,
+        president
+      });
+
+    } catch (err) {
+
+      res.status(500).json({
+
+        success: false,
+
+        message: err.message
+
+      });
+
+    }
+  }
+);
+router.patch(
+    "/presidents/:id/status",
+    protect,
+    superAdminOnly,
+    async (req, res) => {
+        try {
+            const president = await User.findById(req.params.id);
+
+            if (!president) {
+                return res.status(404).json({
+                    success: false,
+                    message: "President not found"
+                });
+            }
+
+            if (president.role !== "president") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Selected user is not a President"
+                });
+            }
+
+            president.isActive = !president.isActive;
+            await president.save();
+
+            res.json({
+                success: true,
+                message: `President ${president.isActive ? "enabled" : "disabled"} successfully`,
+                president
+            });
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
+);
+
+router.post(
+    "/presidents/:id/impersonate",
+    protect,
+    superAdminOnly,
+    async (req, res) => {
+        try {
+            const president = await User.findById(req.params.id);
+
+            if (!president) {
+                return res.status(404).json({
+                    success: false,
+                    message: "President not found"
+                });
+            }
+
+            if (president.role !== "president") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Selected user is not a President"
+                });
+            }
+
+            const token = jwt.sign(
+                {
+                    id: president._id,
+                    impersonation: true,
+                    impersonatedBy: req.user._id
+                },
+                process.env.JWT_SECRET,
+                {
+                    expiresIn: process.env.JWT_EXPIRE || "7d"
+                }
+            );
+
+            const parser = new UAParser(req.headers["user-agent"]);
+            const result = parser.getResult();
+
+            let ip =
+                req.headers["x-forwarded-for"] ||
+                req.socket.remoteAddress ||
+                "";
+
+            if (ip.startsWith("::ffff:")) {
+                ip = ip.replace("::ffff:", "");
+            }
+
+            await UserSession.create({
+                user: president._id,
+                token,
+                browser: result.browser.name || "Unknown Browser",
+                os: result.os.name || "Unknown OS",
+                device: result.device.type || "Desktop",
+                ip,
+                lastActive: new Date()
+            });
+
+            await UserSession.create({
+                user: president._id,
+                token,
+                browser: "Impersonation",
+                os: "Super Admin",
+                device: "Super Admin",
+                ip: req.ip,
+                lastActive: new Date()
+            });
+
+            res.json({
+                success: true,
+                token,
+                president
+            });
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
+);
+
+router.put(
+    "/presidents/:id",
+    protect,
+    superAdminOnly,
+    async (req, res) => {
+
+        try {
+
+            const {
+                name,
+                email,
+                phone,
+                villageId,
+                isActive
+            } = req.body;
+
+            const president = await User.findById(req.params.id);
+
+            if (!president) {
+                return res.status(404).json({
+                    success: false,
+                    message: "President not found"
+                });
+            }
+
+            if (president.role !== "president") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Selected user is not a President"
+                });
+            }
+
+            // Check email uniqueness
+            if (email && email !== president.email) {
+
+                const exists = await User.findOne({
+                    email
+                });
+
+                if (exists) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Email already exists"
+                    });
+                }
+
+                president.email = email;
+            }
+
+            president.name = name || president.name;
+            president.phone = phone || president.phone;
+
+            // Update Village
+            if (villageId) {
+
+                const village = await Village.findById(villageId);
+
+                if (!village) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "Village not found"
+                    });
+                }
+                president.villageId = village._id;  
+                president.villageName = village.name;
+                president.mandal = village.mandal;
+                president.pincode = village.pincode;
+            }
+
+            if (typeof isActive === "boolean") {
+                president.isActive = isActive;
+            }
+
+            await president.save();
+
+            res.json({
+                success: true,
+                message: "President updated successfully",
+                president
+            });
+
+        } catch (err) {
+
+            res.status(500).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+    }
+);
+router.delete(
+    "/presidents/:id",
+    protect,
+    superAdminOnly,
+    async (req, res) => {
+
+        try {
+
+            const president = await User.findById(req.params.id);
+
+            if (!president) {
+                return res.status(404).json({
+                    success: false,
+                    message: "President not found"
+                });
+            }
+
+            if (president.role !== "president") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Selected user is not a President"
+                });
+            }
+
+            await User.findByIdAndDelete(req.params.id);
+
+            res.json({
+                success: true,
+                message: "President deleted successfully"
             });
 
         } catch (err) {

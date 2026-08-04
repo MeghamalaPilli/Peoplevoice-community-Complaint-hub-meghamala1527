@@ -109,6 +109,7 @@ app.use("/api/superadmin", require("./routes/superAdmin"));
 app.use('/api/public', require('./routes/public'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/categories', require('./routes/category'));
 app.use("/api/villages", require("./routes/village"));
 app.use("/api/superadmin", superAdminUsers);
 

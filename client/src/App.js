@@ -17,6 +17,7 @@ import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import MyComplaints from './pages/MyComplaints';
 import NotFound from './pages/NotFound';
 import Chatbot from './components/chatbot/Chatbot';
+import ImpersonationBanner from './components/shared/ImpersonationBanner';
 import PresidentDashboard from './pages/PresidentDashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import ManageUsers from './pages/ManageUsers';
@@ -26,6 +27,7 @@ import Profile from "./pages/Profile";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ManageVillages from "./pages/ManageVillages";
 import SuperAdminUsers from "./pages/SuperAdminUsers";
+import SuperAdminPresidents from "./pages/SuperAdminPresidents";
 
 const OnlineStatusBanner = () => {
   const online = useOnlineStatus();
@@ -70,6 +72,7 @@ const AppRoutes = () => {
   return (
     <ErrorBoundary>
       <OnlineStatusBanner />
+      <ImpersonationBanner />
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/public" element={<PublicDashboard />} />
@@ -115,6 +118,14 @@ const AppRoutes = () => {
   }
 />
 <Route
+  path="/superadmin/analytics"
+  element={
+    <ProtectedRoute roles={["superadmin"]}>
+      <AnalyticsDashboard />
+    </ProtectedRoute>
+  }
+/>
+<Route
     path="/superadmin/villages"
     element={
         <ProtectedRoute roles={["superadmin"]}>
@@ -127,6 +138,14 @@ const AppRoutes = () => {
     element={
         <ProtectedRoute roles={["superadmin"]}>
             <SuperAdminUsers />
+        </ProtectedRoute>
+    }
+/>
+<Route
+    path="/superadmin/presidents"
+    element={
+        <ProtectedRoute roles={["superadmin"]}>
+            <SuperAdminPresidents />
         </ProtectedRoute>
     }
 />
