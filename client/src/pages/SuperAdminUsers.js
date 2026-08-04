@@ -13,6 +13,7 @@ const SuperAdminUsers = () => {
     const [admins,setAdmins]=useState([]);
     const [editAdmin, setEditAdmin] = useState(null);
     const [showModal,setShowModal]=useState(false);
+    const [resendingId, setResendingId] = useState(null);
 
     const fetchAdmins=async()=>{
 
@@ -59,6 +60,21 @@ const SuperAdminUsers = () => {
 
     }
 
+};
+
+const resendEmail = async (admin) => {
+    try {
+        setResendingId(admin._id);
+        await API.post(`/superadmin/admins/${admin._id}/resend-email`);
+        toast.success("Email resent successfully");
+    } catch (err) {
+        toast.error(
+            err.response?.data?.message ||
+            "Unable to resend email"
+        );
+    } finally {
+        setResendingId(null);
+    }
 };
 const deleteAdmin = async (id) => {
 
@@ -253,6 +269,13 @@ const { impersonateLogin } = useAuth();
             onClick={() => impersonateAdmin(admin)}
         >
             Login
+        </button>
+        <button
+            className="btn btn-info"
+            onClick={() => resendEmail(admin)}
+            disabled={resendingId === admin._id}
+        >
+            {resendingId === admin._id ? "Sending..." : "Resend Email"}
         </button>
     </div>
 </td>

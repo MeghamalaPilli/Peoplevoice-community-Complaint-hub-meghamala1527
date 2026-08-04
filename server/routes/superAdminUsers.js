@@ -280,6 +280,69 @@ CivicPulse Team
     }
 );
 
+router.post(
+    "/admins/:id/resend-email",
+    protect,
+    superAdminOnly,
+    async (req, res) => {
+        try {
+            const admin = await User.findById(req.params.id);
+
+            if (!admin) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Admin not found"
+                });
+            }
+
+            if (admin.role !== "admin") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Selected user is not a Village Admin"
+                });
+            }
+
+            const password = crypto.randomBytes(6).toString("hex");
+            admin.password = password;
+            await admin.save();
+
+            await sendEmail(
+                admin.email,
+                "CivicPulse - Village Admin Account Info",
+                `Hello ${admin.name},
+
+Your Village Admin account is ready.
+
+Village:
+${admin.villageName}
+
+Email:
+${admin.email}
+
+Temporary Password:
+${password}
+
+Please login and change your password immediately.
+
+Regards,
+
+CivicPulse Team`
+            );
+
+            res.json({
+                success: true,
+                message: "Village Admin email resent successfully",
+                admin
+            });
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
+);
+
 router.get(
     "/admins",
     protect,
@@ -619,6 +682,69 @@ CivicPulse Team`
 
     }
   }
+);
+
+router.post(
+    "/presidents/:id/resend-email",
+    protect,
+    superAdminOnly,
+    async (req, res) => {
+        try {
+            const president = await User.findById(req.params.id);
+
+            if (!president) {
+                return res.status(404).json({
+                    success: false,
+                    message: "President not found"
+                });
+            }
+
+            if (president.role !== "president") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Selected user is not a President"
+                });
+            }
+
+            const password = crypto.randomBytes(6).toString("hex");
+            president.password = password;
+            await president.save();
+
+            await sendEmail(
+                president.email,
+                "CivicPulse - President Account Info",
+                `Hello ${president.name},
+
+Your President account details are below.
+
+Village:
+${president.villageName}
+
+Email:
+${president.email}
+
+Temporary Password:
+${password}
+
+Please login and change your password immediately.
+
+Regards,
+
+CivicPulse Team`
+            );
+
+            res.json({
+                success: true,
+                message: "President email resent successfully",
+                president
+            });
+        } catch (err) {
+            res.status(500).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
 );
 router.patch(
     "/presidents/:id/status",

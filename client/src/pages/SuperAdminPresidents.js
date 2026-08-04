@@ -12,6 +12,7 @@ const SuperAdminPresidents = () => {
     const [presidents, setPresidents] = useState([]);
     const [editPresident, setEditPresident] = useState(null);
     const [showModal,setShowModal]=useState(false);
+    const [resendingId, setResendingId] = useState(null);
 
     const fetchPresidents=async()=>{
 
@@ -58,6 +59,21 @@ const SuperAdminPresidents = () => {
 
     }
 
+};
+
+const resendEmail = async (president) => {
+    try {
+        setResendingId(president._id);
+        await API.post(`/superadmin/presidents/${president._id}/resend-email`);
+        toast.success("Email resent successfully");
+    } catch (err) {
+        toast.error(
+            err.response?.data?.message ||
+            "Unable to resend email"
+        );
+    } finally {
+        setResendingId(null);
+    }
 };
 const deletePresident = async (id) => {
 
@@ -252,6 +268,13 @@ const { impersonateLogin } = useAuth();
             onClick={() => impersonatePresident(president)}
         >
             Login
+        </button>
+        <button
+            className="btn btn-info"
+            onClick={() => resendEmail(president)}
+            disabled={resendingId === president._id}
+        >
+            {resendingId === president._id ? "Sending..." : "Resend Email"}
         </button>
     </div>
 </td>

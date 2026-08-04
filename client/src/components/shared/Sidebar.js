@@ -41,7 +41,7 @@ const presidentLinks = [
 ];
 const superAdminLinks = [
   { path: "/superadmin", icon: <MdDashboard />, label: "Dashboard" },
-  { path: "/admin/analytics", icon: <MdBarChart />, label: "Analytics" },
+  { path: "/superadmin/analytics", icon: <MdBarChart />, label: "Analytics" },
 
   { path: "/profile", icon: <MdPerson />, label: "My Profile" },
 ];
