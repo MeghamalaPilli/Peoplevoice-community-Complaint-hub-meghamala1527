@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: peoplevoice-mongo
+    restart: always
+
+    ports:
+      - "27017:27017"
+
+    volumes:
+      - mongo-data:/data/db
+
+  server:
+    image: peoplevoice-server
+    build:
+      context: ./server
+
+    container_name: peoplevoice-server
+    restart: always
+
+    ports:
+      - "5000:5000"
+
+    depends_on:
+      - mongodb
+
+    env_file:
+      - ./server/.env
+
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/civicpulse
+
+    volumes:
+      - ./server/uploads:/app/uploads
+
+  client:
+    image: peoplevoice-client
+    build:
+      context: ./client
+
+    container_name: peoplevoice-client
+    restart: always
+
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - server
+
+    stdin_open: true
+    tty: true
+
+volumes:
+  mongo-data:
